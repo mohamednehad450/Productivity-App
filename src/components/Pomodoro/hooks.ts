@@ -1,335 +1,358 @@
-import { createContext, useContext, useEffect, useReducer, useState } from "react"
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useState,
+} from "react";
 import { defaultPomodoroSettings } from "../Settings";
 import { useIntervals } from "./intervalContext";
-import { breakSound, workSound } from '../../audio'
+import { breakSound, workSound } from "../../audio";
 import { pushNotifications } from "../../utils";
 
 import type { AuthContext, PomodoroInterval, Todo } from "../../API";
 import type { PomodoroSettings } from "../Settings";
 
-
 enum PomodoroMode {
-    WORK = "work",
-    BREAK = "break",
-    LONGBREAK = "longbreak",
+  WORK = "work",
+  BREAK = "break",
+  LONGBREAK = "longbreak",
 }
 
 // Reducers Actions
 enum PomodoroActions {
-    tick = "TICK",
-    reset = "RESET",
-    skip = "SKIP",
+  tick = "TICK",
+  reset = "RESET",
+  skip = "SKIP",
 }
 
 // units in milieseconds
 interface PomodoroState {
-    mode: PomodoroMode
-    defaultTime: number
-    timeLeft: number
-    notifyState?: PomodoroMode
+  mode: PomodoroMode;
+  defaultTime: number;
+  timeLeft: number;
+  notifyState?: PomodoroMode;
 }
 
 interface PomodoroStats {
-    round: number
-    goal: number
-    date: Date | string
+  round: number;
+  goal: number;
+  date: Date | string;
 }
 
 interface Pomodoro {
-    state: PomodoroState
-    stats: PomodoroStats
+  state: PomodoroState;
+  stats: PomodoroStats;
 }
 
 // Reducers Type
 type PomodoroReducer = (
-    pomodoro: {
-        state: PomodoroState,
-        stats: PomodoroStats
-    },
-    action: {
-        type: PomodoroActions,
-        payload: {
-            settings: PomodoroSettings,
-        }
-    }) => Pomodoro;
-
+  pomodoro: {
+    state: PomodoroState;
+    stats: PomodoroStats;
+  },
+  action: {
+    type: PomodoroActions;
+    payload: {
+      settings: PomodoroSettings;
+    };
+  }
+) => Pomodoro;
 
 const defaultPomodoroState: PomodoroState = {
-    mode: PomodoroMode.WORK,
-    defaultTime: defaultPomodoroSettings[PomodoroMode.WORK] * 1000,
-    timeLeft: defaultPomodoroSettings[PomodoroMode.WORK] * 1000,
-}
+  mode: PomodoroMode.WORK,
+  defaultTime: defaultPomodoroSettings[PomodoroMode.WORK] * 1000,
+  timeLeft: defaultPomodoroSettings[PomodoroMode.WORK] * 1000,
+};
 
 const defaultPomodoroStats: PomodoroStats = {
-    round: 0,
-    goal: 0,
-    date: new Date()
-}
-
+  round: 0,
+  goal: 0,
+  date: new Date(),
+};
 
 interface PomodoroContext {
-    state: PomodoroState
-    stats: PomodoroStats
-    isRunning: boolean
-    start: () => void
-    stop: () => void
-    reset: () => void
-    skip: () => void
-    setTodo: (id?: Todo['id']) => void
+  state: PomodoroState;
+  stats: PomodoroStats;
+  isRunning: boolean;
+  start: () => void;
+  stop: () => void;
+  reset: () => void;
+  skip: () => void;
+  setTodo: (id?: Todo["id"]) => void;
 }
 
 const pomodoroContext = createContext<PomodoroContext>({
-    state: defaultPomodoroState,
+  state: defaultPomodoroState,
+  stats: defaultPomodoroStats,
+  isRunning: false,
+  start: () => console.error("pomodoro not initialized"),
+  stop: () => console.error("pomodoro not initialized"),
+  reset: () => console.error("pomodoro not initialized"),
+  skip: () => console.error("pomodoro not initialized"),
+  setTodo: () => console.error("pomodoro not initialized"),
+});
+
+const usePomodoro = () => useContext(pomodoroContext);
+
+const TICK = 1000;
+
+const useProvidePomodoro = (
+  { user }: AuthContext,
+  settings: PomodoroSettings
+): PomodoroContext => {
+  const [pomodoro, dispatch] = useReducer(pomodoroReducer, {
+    state: newState(PomodoroMode.WORK, settings),
     stats: defaultPomodoroStats,
-    isRunning: false,
-    start: () => console.error("pomodoro not initialized"),
-    stop: () => console.error("pomodoro not initialized"),
-    reset: () => console.error("pomodoro not initialized"),
-    skip: () => console.error("pomodoro not initialized"),
-    setTodo: () => console.error("pomodoro not initialized"),
-})
+  });
 
-const usePomodoro = () => useContext(pomodoroContext)
+  const { addInterval } = useIntervals();
 
-const TICK = 1000
+  const [pomInterval, setPomInterval] = useState<Partial<PomodoroInterval>>();
 
-const useProvidePomodoro = ({ user }: AuthContext, settings: PomodoroSettings): PomodoroContext => {
+  const [timer, setTimer] = useState<any>();
 
-    const [pomodoro, dispatch] = useReducer(pomodoroReducer, {
-        state: newState(PomodoroMode.WORK, settings),
-        stats: defaultPomodoroStats,
-    })
+  // Cleans up the Timer
+  useEffect(() => {
+    return () => clearInterval(timer);
+  }, [timer]);
 
-    const { addInterval } = useIntervals()
+  // Mode Change Effect
+  useEffect(() => {
+    // Handles autoStart
+    if (!settings.autoStart) {
+      clearTimeout(timer);
+      setTimer(undefined);
+    }
+    // Submiting Pomodoro Interval to Api
+    if (pomodoro.state.mode !== PomodoroMode.WORK) {
+      if (pomInterval?.startDate) {
+        addInterval({
+          ...pomInterval,
+          endDate: new Date(),
+        }); // TODO: Handles api error
+        setPomInterval((p) => ({ todo: p?.todo }));
+      }
+    }
 
-    const [pomInterval, setPomInterval] = useState<Partial<PomodoroInterval>>()
-
-    const [timer, setTimer] = useState<any>()
-
-    // Cleans up the Timer
-    useEffect(() => {
-        return () => clearInterval(timer)
-    }, [timer])
-
-    // Mode Change Effect
-    useEffect(() => {
-        // Handles autoStart
-        if (!settings.autoStart) {
-            clearTimeout(timer)
-            setTimer(undefined)
-        }
-        // Submiting Pomodoro Interval to Api
-        if (pomodoro.state.mode !== PomodoroMode.WORK) {
-            if (pomInterval?.startDate) {
-                addInterval({
-                    ...pomInterval,
-                    endDate: new Date(),
-                }) // TODO: Handles api error
-                setPomInterval(p => ({ todo: p?.todo }))
+    // Initializing Pomodoro Interval
+    if (pomodoro.state.mode === PomodoroMode.WORK) {
+      setPomInterval((p) =>
+        !!timer
+          ? {
+              ...p,
+              startDate: new Date(),
+              defaultDuration: settings.work,
             }
-        }
-
-        // Initializing Pomodoro Interval
-        if (pomodoro.state.mode === PomodoroMode.WORK) {
-            setPomInterval(p => !!timer ? {
-                ...p,
-                startDate: new Date(),
-                defaultDuration: settings.work
-            } :
-                { todo: p?.todo }
-            )
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pomodoro.state.mode])
-
-    // Hanlde notifiy effect
-    useEffect(() => {
-        setTimeout(() => {
-            switch (pomodoro.state.notifyState) {
-                case PomodoroMode.WORK:
-                    settings.enableSound &&
-                        workSound.play()
-                    settings.enableNotifications &&
-                        pushNotifications('Work session is over, It\'s time for a break.')
-                    break;
-                case PomodoroMode.LONGBREAK:
-                    settings.enableSound &&
-                        breakSound.play()
-                    settings.enableNotifications &&
-                        pushNotifications('Long break is over, It\'s time to get back to work.')
-                    break;
-                case PomodoroMode.BREAK:
-                    settings.enableSound &&
-                        breakSound.play()
-                    settings.enableNotifications &&
-                        pushNotifications('Short Break is over, It\'s time to get back to work.')
-                    break;
-            }
-        }, 0)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pomodoro.state.notifyState])
-
-
-    // Resets when settings changes
-    useEffect(() => {
-        reset()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [settings])
-
-    const tick = () => {
-        dispatch({
-            type: PomodoroActions.tick,
-            payload: {
-                settings: settings,
-            }
-        })
+          : { todo: p?.todo }
+      );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pomodoro.state.mode]);
 
-    const start = () => {
-        if (!timer) {
-            setTimer(setInterval(tick, TICK))
-        }
-        if (!pomInterval?.startDate && PomodoroMode.WORK) {
-            setPomInterval(p => ({
-                ...p,
-                startDate: new Date(),
-                defaultDuration: settings.work
-            }))
-        }
+  // Hanlde notifiy effect
+  useEffect(() => {
+    setTimeout(() => {
+      switch (pomodoro.state.notifyState) {
+        case PomodoroMode.WORK:
+          settings.enableSound && workSound.play();
+          settings.enableNotifications &&
+            pushNotifications("Work session is over, It's time for a break.");
+          break;
+        case PomodoroMode.LONGBREAK:
+          settings.enableSound && breakSound.play();
+          settings.enableNotifications &&
+            pushNotifications(
+              "Long break is over, It's time to get back to work."
+            );
+          break;
+        case PomodoroMode.BREAK:
+          settings.enableSound && breakSound.play();
+          settings.enableNotifications &&
+            pushNotifications(
+              "Short Break is over, It's time to get back to work."
+            );
+          break;
+      }
+    }, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pomodoro.state.notifyState]);
+
+  // Resets when settings changes
+  useEffect(() => {
+    reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings]);
+
+  const tick = () => {
+    dispatch({
+      type: PomodoroActions.tick,
+      payload: {
+        settings: settings,
+      },
+    });
+  };
+
+  const start = () => {
+    if (!timer) {
+      setTimer(setInterval(tick, TICK));
     }
-
-    const stop = () => {
-        if (timer) {
-            clearInterval(timer)
-            setTimer(undefined)
-        }
+    if (!pomInterval?.startDate && PomodoroMode.WORK) {
+      setPomInterval((p) => ({
+        ...p,
+        startDate: new Date(),
+        defaultDuration: settings.work,
+      }));
     }
+  };
 
-    const reset = () => {
-        clearInterval(timer)
-        setTimer(undefined)
-        dispatch({
-            type: PomodoroActions.reset,
-            payload: {
-                settings: settings,
-            }
-        })
+  const stop = () => {
+    if (timer) {
+      clearInterval(timer);
+      setTimer(undefined);
     }
+  };
 
-    const skip = () => {
-        dispatch({
-            type: PomodoroActions.skip,
-            payload: {
-                settings: settings,
-            }
-        })
-        if (!settings.submitOnSkip) {
-            setPomInterval(p => ({ todo: p?.todo }))
-        }
+  const reset = () => {
+    clearInterval(timer);
+    setTimer(undefined);
+    dispatch({
+      type: PomodoroActions.reset,
+      payload: {
+        settings: settings,
+      },
+    });
+  };
+
+  const skip = () => {
+    dispatch({
+      type: PomodoroActions.skip,
+      payload: {
+        settings: settings,
+      },
+    });
+    if (!settings.submitOnSkip) {
+      setPomInterval((p) => ({ todo: p?.todo }));
     }
+  };
 
-    const setTodo = (id?: Todo['id']) => {
-        setPomInterval(p => ({ ...p, todo: id }))
-    }
+  const setTodo = (id?: Todo["id"]) => {
+    setPomInterval((p) => ({ ...p, todo: id }));
+  };
 
+  return {
+    ...pomodoro,
+    isRunning: !!timer,
+    start,
+    stop,
+    reset,
+    skip,
+    setTodo,
+  };
+};
 
-    return {
-        ...pomodoro,
-        isRunning: !!timer,
-        start,
-        stop,
-        reset,
-        skip,
-        setTodo,
-    }
+function newState(
+  mode: PomodoroMode,
+  settings: PomodoroSettings,
+  notifyState?: PomodoroMode
+): PomodoroState {
+  return {
+    notifyState,
+    mode,
+    timeLeft: settings[mode] * 1000,
+    defaultTime: settings[mode] * 1000,
+  };
 }
 
-function newState(mode: PomodoroMode, settings: PomodoroSettings, notifyState?: PomodoroMode): PomodoroState {
-    return {
-        notifyState,
-        mode,
-        timeLeft: settings[mode] * 1000,
-        defaultTime: settings[mode] * 1000,
-    }
-}
-
-
-const pomodoroReducer: PomodoroReducer = ({ state, stats }, { type, payload: { settings } }) => {
-    function nextPomodoro(state: PomodoroState, stats: PomodoroStats, settings: PomodoroSettings): Pomodoro {
-        // Time is up: Switching to a new mode
-        if (state.timeLeft - TICK < 0) {
-            switch (state.mode) {
-                case PomodoroMode.WORK:
-                    const s = {
-                        ...stats,
-                        round: stats.round + 1,
-                        goal: stats.goal + 1,
-                    }
-                    // Should go on a long or short break?
-                    if (stats.round + 1 >= settings.longBreakAfter) {
-                        return {
-                            state: newState(PomodoroMode.LONGBREAK, settings, state.notifyState),
-                            stats: s
-                        }
-                    } else return {
-                        state: newState(PomodoroMode.BREAK, settings, state.notifyState),
-                        stats: s
-                    }
-                case PomodoroMode.BREAK:
-                    return {
-                        state: newState(PomodoroMode.WORK, settings, state.notifyState),
-                        stats
-                    }
-                case PomodoroMode.LONGBREAK:
-                    return {
-                        state: newState(PomodoroMode.WORK, settings, state.notifyState),
-                        stats: { ...stats, round: 0 }
-                    }
-                default:
-                    throw new Error('Invalid PomodoroMode')
-            }
-        }
-        else {
+const pomodoroReducer: PomodoroReducer = (
+  { state, stats },
+  { type, payload: { settings } }
+) => {
+  function nextPomodoro(
+    state: PomodoroState,
+    stats: PomodoroStats,
+    settings: PomodoroSettings
+  ): Pomodoro {
+    // Time is up: Switching to a new mode
+    if (state.timeLeft - TICK < 0) {
+      switch (state.mode) {
+        case PomodoroMode.WORK:
+          const s = {
+            ...stats,
+            round: stats.round + 1,
+            goal: stats.goal + 1,
+          };
+          // Should go on a long or short break?
+          if (stats.round + 1 >= settings.longBreakAfter) {
             return {
-                state: {
-                    ...state,
-                    timeLeft: state.timeLeft - TICK,
-                },
-                stats,
-            }
-        }
-    }
-
-    switch (type) {
-        case PomodoroActions.tick:
-            return nextPomodoro({
-                ...state,
-                notifyState: state.timeLeft - TICK < 0 ? state.mode : undefined
-            },
-                stats,
-                settings
-            )
-        case PomodoroActions.skip:
-            return nextPomodoro({
-                ...state,
-                timeLeft: 0,
-                notifyState: undefined
-            },
-                stats,
-                settings
-            )
-        case PomodoroActions.reset:
+              state: newState(
+                PomodoroMode.LONGBREAK,
+                settings,
+                state.notifyState
+              ),
+              stats: s,
+            };
+          } else
             return {
-                state: newState(state.mode, settings),
-                stats,
-            }
+              state: newState(PomodoroMode.BREAK, settings, state.notifyState),
+              stats: s,
+            };
+        case PomodoroMode.BREAK:
+          return {
+            state: newState(PomodoroMode.WORK, settings, state.notifyState),
+            stats,
+          };
+        case PomodoroMode.LONGBREAK:
+          return {
+            state: newState(PomodoroMode.WORK, settings, state.notifyState),
+            stats: { ...stats, round: 0 },
+          };
         default:
-            return {
-                state,
-                stats
-            }
+          throw new Error("Invalid PomodoroMode");
+      }
+    } else {
+      return {
+        state: {
+          ...state,
+          timeLeft: state.timeLeft - TICK,
+        },
+        stats,
+      };
     }
-}
+  }
 
-export { usePomodoro, useProvidePomodoro, pomodoroContext }
-export type { PomodoroState, PomodoroMode, PomodoroContext }
+  switch (type) {
+    case PomodoroActions.tick:
+      return nextPomodoro(
+        {
+          ...state,
+          notifyState: state.timeLeft - TICK < 0 ? state.mode : undefined,
+        },
+        stats,
+        settings
+      );
+    case PomodoroActions.skip:
+      return nextPomodoro(
+        {
+          ...state,
+          timeLeft: 0,
+          notifyState: undefined,
+        },
+        stats,
+        settings
+      );
+    case PomodoroActions.reset:
+      return {
+        state: newState(state.mode, settings),
+        stats,
+      };
+    default:
+      return {
+        state,
+        stats,
+      };
+  }
+};
+
+export { usePomodoro, useProvidePomodoro, pomodoroContext };
+export type { PomodoroState, PomodoroMode, PomodoroContext };

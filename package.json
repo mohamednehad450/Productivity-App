@@ -58,6 +58,7 @@
     ]
   },
   "devDependencies": {
-    "@types/react-transition-group": "^4.4.1"
+    "@types/react-transition-group": "^4.4.1",
+    "prettier": "^2.8.8"
   }
 }

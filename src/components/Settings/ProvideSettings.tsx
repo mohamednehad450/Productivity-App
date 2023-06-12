@@ -1,16 +1,14 @@
 import { FC } from "react";
 import { useProvideSettings, settingsContext } from ".";
 
-
 const ProvideSettings: FC = ({ children }) => {
+  const settings = useProvideSettings();
 
-    const settings = useProvideSettings()
+  return (
+    <settingsContext.Provider value={settings}>
+      {children}
+    </settingsContext.Provider>
+  );
+};
 
-    return (
-        <settingsContext.Provider value={settings}>
-            {children}
-        </settingsContext.Provider>
-    )
-}
-
-export default ProvideSettings
+export default ProvideSettings;

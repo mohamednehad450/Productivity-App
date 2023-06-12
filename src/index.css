@@ -8,20 +8,20 @@ body {
 }
 
 :root {
-  --gray0: #EBE9ED;
-  --gray1: #C3BCC8;
-  --gray2: #A59AAC;
+  --gray0: #ebe9ed;
+  --gray1: #c3bcc8;
+  --gray2: #a59aac;
   --gray3: #877891;
-  --gray4: #685C70;
-  --gray5: #49404F;
-  --gray6: #342E38;
-  --gray7: #1F1C22;
+  --gray4: #685c70;
+  --gray5: #49404f;
+  --gray6: #342e38;
+  --gray7: #1f1c22;
   --gray-dim: rgba(135, 120, 145, 0.2);
-  --blue1: #4B7CDA;
+  --blue1: #4b7cda;
   --orange1: #f4845f;
-  --orange2: #F05E2D;
-  --green1: #96E072;
-  --green2: #58B828;
+  --orange2: #f05e2d;
+  --green1: #96e072;
+  --green2: #58b828;
   --speed: 250ms;
 }
 
@@ -212,7 +212,7 @@ main {
   overflow: hidden;
 }
 
-.row-container>hr {
+.row-container > hr {
   border: 0;
   margin-left: 2rem;
   border-top: 1px solid rgba(0, 0, 0, 0.25);
@@ -265,7 +265,7 @@ main {
 }
 
 .icon-pomodoro {
-  fill: #FF8E6A;
+  fill: #ff8e6a;
 }
 
 .icon-sm svg {
@@ -317,7 +317,7 @@ main {
 
 /* On mouse-over, add a grey background color */
 
-.checkbox-container:hover input~.checkmark {
+.checkbox-container:hover input ~ .checkmark {
   background-color: var(--gray-dim);
 }
 
@@ -329,7 +329,7 @@ main {
 
 /* Show the checkmark when checked */
 
-.checkbox-container input:checked~.checkmark .checked {
+.checkbox-container input:checked ~ .checkmark .checked {
   display: block;
 }
 
@@ -595,7 +595,7 @@ main {
 }
 
 .btn-disabled {
-  filter: opacity(0.4) grayscale(20%)
+  filter: opacity(0.4) grayscale(20%);
 }
 
 .btn-disabled:hover {
@@ -683,7 +683,7 @@ main {
 }
 
 .select-input:hover {
-  background-color: var(--gray-dim)!important;
+  background-color: var(--gray-dim) !important;
 }
 
 .select-item {
@@ -709,13 +709,13 @@ main {
 }
 
 .select-item-selected:hover {
-  background-color: rgba(90, 146, 255, 0.7)!important;
+  background-color: rgba(90, 146, 255, 0.7) !important;
 }
 
 .align-row {
   display: flex;
   align-items: center;
-  padding: 0 1rem
+  padding: 0 1rem;
 }
 
 .dropdown {
@@ -999,7 +999,7 @@ main {
 }
 
 .entry-checked {
-  background-color: var(--table-cell)!important;
+  background-color: var(--table-cell) !important;
 }
 
 .entry-today {
@@ -1153,7 +1153,8 @@ main {
   justify-content: center;
 }
 
-.stats-body .setting-input, .stats-body .checkbox {
+.stats-body .setting-input,
+.stats-body .checkbox {
   padding: 0 !important;
   margin: 0;
 }
@@ -1176,7 +1177,7 @@ main {
 
 .tag-select-item {
   color: inherit;
-  fill: inherit
+  fill: inherit;
 }
 
 .tag-select-actions {
@@ -1185,7 +1186,7 @@ main {
 
 .tag-select-actions svg {
   padding: 0 0.25rem;
-  fill: inherit
+  fill: inherit;
 }
 
 @media only screen and (max-width: 799px) {

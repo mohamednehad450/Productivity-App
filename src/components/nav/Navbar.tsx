@@ -1,17 +1,15 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode } from "react";
 
 interface NavbarProps {
-    children: ReactNode,
+  children: ReactNode;
 }
 
 const Navbar = (props: NavbarProps) => {
-    return (
-        <nav className="navbar">
-            <ul className="navbar-nav">
-                {props.children}
-            </ul>
-        </nav>
-    );
-}
+  return (
+    <nav className="navbar">
+      <ul className="navbar-nav">{props.children}</ul>
+    </nav>
+  );
+};
 
 export default Navbar;

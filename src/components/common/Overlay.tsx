@@ -1,14 +1,9 @@
-import React from 'react'
+import React from "react";
 
-interface OverlayProps { }
+interface OverlayProps {}
 
+const Overlay: React.FC<OverlayProps> = ({ children }) => {
+  return <div className="overlay">{children}</div>;
+};
 
-const Overlay: React.FC<OverlayProps> = ({children}) => {
-    return (
-        <div className='overlay'>
-            {children}
-        </div>
-    )
-}
-
-export default Overlay
+export default Overlay;

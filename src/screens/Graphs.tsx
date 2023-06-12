@@ -1,24 +1,26 @@
-import { useEffect } from 'react'
-import { Header } from '../components/common'
-import { HabitStats, PomodoroStats, Summary, TodoStats } from '../components/Graphs'
+import { useEffect } from "react";
+import { Header } from "../components/common";
+import {
+  HabitStats,
+  PomodoroStats,
+  Summary,
+  TodoStats,
+} from "../components/Graphs";
 
 const Graphs = () => {
+  useEffect(() => {
+    document.title = "Graphs";
+  }, []);
 
-    useEffect(() => {
-        document.title = 'Graphs'
-    }, [])
+  return (
+    <div className="container">
+      <Header title="Graphs" />
+      <Summary />
+      <PomodoroStats />
+      <TodoStats />
+      <HabitStats />
+    </div>
+  );
+};
 
-    return (
-        <div className="container">
-            <Header
-                title="Graphs"
-            />
-            <Summary />
-            <PomodoroStats />
-            <TodoStats />
-            <HabitStats />
-        </div>
-    )
-}
-
-export default Graphs
+export default Graphs;
