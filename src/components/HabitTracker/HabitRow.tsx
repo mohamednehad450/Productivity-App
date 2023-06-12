@@ -4,20 +4,19 @@ import HabitEntries from "./HabitEntries";
 import NewHabitOverlay from "./NewHabitOverlay";
 
 import { ReactComponent as ExpandIcon } from "../../icons/expand.svg";
-
-import type { Habit } from "../../API";
+import { Habit } from "./hooks";
 
 interface HabitRowProps {
   habit: Habit;
   expanded: boolean;
   remove: (id: Habit["id"]) => void;
-  update: (id: Habit["id"], h: Partial<Habit>) => Promise<any>;
-  addEntry: (id: Habit["id"], d: Date) => Promise<any>;
-  removeEntry: (id: Habit["id"], d: Date) => Promise<any>;
+  update: (id: Habit["id"], h: Habit) => void;
+  addEntry: (id: Habit["id"], d: Date) => void;
+  removeEntry: (id: Habit["id"], d: Date) => void;
   onClick: (id: Habit["id"]) => void;
 }
 
-const HaibtRow: FC<HabitRowProps> = ({
+const HabitRow: FC<HabitRowProps> = ({
   habit,
   expanded,
   onClick,
@@ -66,4 +65,4 @@ const HaibtRow: FC<HabitRowProps> = ({
   );
 };
 
-export default HaibtRow;
+export default HabitRow;

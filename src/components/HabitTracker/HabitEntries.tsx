@@ -3,8 +3,7 @@ import { CSSTransition } from "react-transition-group";
 import { Button } from "../common";
 import Month from "./Month";
 import { monthDateFormat } from "../../utils";
-
-import type { Habit } from "../../API";
+import { Habit } from "./hooks";
 
 interface HabitEntriesProps {
   entries: Habit["entries"];

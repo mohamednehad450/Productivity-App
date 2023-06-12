@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Header, IconButton } from "../components/common";
 import {
   NewHabitOverlay,
@@ -8,7 +8,7 @@ import {
 
 import { ReactComponent as AddIcon } from "../icons/add-outline.svg";
 
-import type { Habit } from "../API";
+import type { Habit } from "../components/HabitTracker";
 
 const HabitTracker = () => {
   useEffect(() => {

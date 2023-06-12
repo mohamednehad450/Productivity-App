@@ -1,10 +1,8 @@
-import React, { FC } from "react";
-import { useAuth } from "../../API";
+import { FC } from "react";
 import { useProvideHabits, habitsContext } from "./hooks";
 
 const ProvideHabits: FC = ({ children }) => {
-  const auth = useAuth();
-  const habits = useProvideHabits(auth);
+  const habits = useProvideHabits();
   return (
     <habitsContext.Provider value={habits}>{children}</habitsContext.Provider>
   );

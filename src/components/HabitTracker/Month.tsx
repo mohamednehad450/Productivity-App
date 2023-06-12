@@ -1,5 +1,5 @@
 import { FC, useEffect, useState } from "react";
-import { Habit } from "../../API";
+import { Habit } from "./hooks";
 import { getDaysInMonth } from "../../utils";
 import { NumCheckBox } from "../common";
 
