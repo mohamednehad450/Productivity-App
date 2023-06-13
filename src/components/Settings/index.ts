@@ -2,7 +2,6 @@ import ProvideSettings from "./ProvideSettings";
 import PomodoroSettingsInput from "./PomodoroSettingsInput";
 import ThemeSettingsInput from "./ThemeSettingsInput";
 import TodosSettingsInput from "./TodosSettingsInput";
-import AccountSettings from "./AccountSettings";
 
 import {
   useSettings,
@@ -28,7 +27,6 @@ export {
   PomodoroSettingsInput,
   ThemeSettingsInput,
   TodosSettingsInput,
-  AccountSettings,
 };
 export type {
   SettingsContext,

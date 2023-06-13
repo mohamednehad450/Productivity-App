@@ -1,7 +1,6 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Header } from "../components/common";
 import {
-  AccountSettings,
   PomodoroSettingsInput,
   ThemeSettingsInput,
   TodosSettingsInput,
@@ -30,7 +29,6 @@ const Settings = () => {
         themeSettings={settings.themeSettings}
         onChange={(themeSettings) => updateSettings({ themeSettings })}
       />
-      <AccountSettings />
     </div>
   );
 };
