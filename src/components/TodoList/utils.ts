@@ -160,7 +160,7 @@ export interface FormatedTodo extends Todo {
 }
 
 export const formatTodo = (todo: Todo): FormatedTodo => {
-  const { steps, dueDate: todoDueDate, checked: todoCheckedDate } = todo;
+  const { steps, dueDate: todoDueDate } = todo;
 
   const stepsLeft = steps.length
     ? steps.filter((step) => !step.checked).length

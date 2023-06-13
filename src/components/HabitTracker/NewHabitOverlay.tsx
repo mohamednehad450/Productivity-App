@@ -23,7 +23,7 @@ const NewHabitOverlay: FC<NewHabitOverlayProps> = ({
     if (habit.title && err) {
       setErr(undefined);
     }
-  }, [habit.title]);
+  }, [habit.title, err]);
 
   return (
     <Overlay>

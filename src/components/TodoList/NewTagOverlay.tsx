@@ -25,7 +25,7 @@ const NewTagOverlay: FC<NewTagOverlayProps> = ({
     if (tag.label && err) {
       setErr(undefined);
     }
-  }, [tag.label]);
+  }, [tag.label, err]);
 
   return (
     <Overlay>
