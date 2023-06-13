@@ -21,12 +21,10 @@ const NewHabitOverlay: FC<NewHabitOverlayProps> = ({
   const [err, setErr] = useState<string>();
 
   useEffect(() => {
-    if (!habit.title) {
-      setErr("Must enter habit title");
-    } else {
+    if (habit.title && err) {
       setErr(undefined);
     }
-  }, [title]);
+  }, [habit.title]);
 
   return (
     <Overlay>
@@ -44,9 +42,18 @@ const NewHabitOverlay: FC<NewHabitOverlayProps> = ({
           </Button>
           <Button
             type="primary"
-            onClick={() =>
-              submit({ ...habit, created: new Date().toDateString() })
-            }
+            onClick={() => {
+              if (!habit.title) {
+                setErr("Must provide title");
+                return;
+              }
+
+              if (habit.title.length > 150) {
+                setErr("Title cannot be more then 150 character");
+                return;
+              }
+              submit({ ...habit, created: new Date().toDateString() });
+            }}
           >
             {initialHabit ? "Save" : "Add"}
           </Button>
