@@ -2,7 +2,6 @@ import { FC, useEffect, useState } from "react";
 import { Button, ButtonsRow, Overlay, TextInput } from "../common";
 import { Habit } from "./hooks";
 import { v4 } from "uuid";
-import { title } from "process";
 
 interface NewHabitOverlayProps {
   close: () => void;
@@ -53,6 +52,7 @@ const NewHabitOverlay: FC<NewHabitOverlayProps> = ({
                 return;
               }
               submit({ ...habit, created: new Date().toDateString() });
+              close();
             }}
           >
             {initialHabit ? "Save" : "Add"}

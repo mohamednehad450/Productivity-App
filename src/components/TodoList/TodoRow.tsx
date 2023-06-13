@@ -41,7 +41,7 @@ const TodoRow = (props: TodoRowProps) => {
     <>
       {editing && (
         <NewTodoOverlay
-          done={() => setEditing(false)}
+          close={() => setEditing(false)}
           submit={(t) => updateTodo(todo.id, t)}
           initialTodo={todo}
         />

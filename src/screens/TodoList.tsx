@@ -36,7 +36,10 @@ const TodoList: FC = () => {
   return (
     <div className="container">
       {newOverlay && (
-        <NewTodoOverlay submit={addNewTodo} done={() => setNewOverlay(false)} />
+        <NewTodoOverlay
+          submit={addNewTodo}
+          close={() => setNewOverlay(false)}
+        />
       )}
       <Header
         title="Todo List"

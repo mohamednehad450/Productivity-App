@@ -1,17 +1,9 @@
 import { FC, useEffect, useState } from "react";
 import { SliderPicker } from "react-color";
-
-import {
-  Overlay,
-  Button,
-  ButtonsRow,
-  TextInput,
-  ColorTag,
-  ErrorList,
-} from "../common";
+import { Overlay, Button, ButtonsRow, TextInput, ColorTag } from "../common";
+import { v4 } from "uuid";
 
 import type { Tag } from "./hooks";
-import { v4 } from "uuid";
 
 interface NewTagOverlayProps {
   close: () => void;
@@ -70,6 +62,7 @@ const NewTagOverlay: FC<NewTagOverlayProps> = ({
                 return;
               }
               submit(tag);
+              close();
             }}
           >
             {initialTag ? "Save" : "Add"}

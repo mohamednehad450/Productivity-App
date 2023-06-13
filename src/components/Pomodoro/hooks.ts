@@ -137,6 +137,7 @@ const useProvidePomodoro = (settings: PomodoroSettings): PomodoroContext => {
           endDate: new Date().toISOString(),
           id: v4(),
           startDate: pomInterval.startDate,
+          todoId: pomInterval.todoId,
         }); // TODO: Handles api error
         setPomInterval((p) => ({ todoId: p?.todoId }));
       }

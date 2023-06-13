@@ -18,7 +18,7 @@ import type { TodoError } from "./utils";
 import { v4 } from "uuid";
 
 interface NewTodoOverlayProps {
-  done: () => void;
+  close: () => void;
   submit: (todo: Todo) => void;
   initialTodo?: Todo;
 }
@@ -31,7 +31,7 @@ function getMaxDate(steps: Partial<Step>[]): Date | undefined {
 }
 
 const NewTodoOverlay: FC<NewTodoOverlayProps> = ({
-  done,
+  close,
   submit,
   initialTodo,
 }) => {
@@ -91,7 +91,7 @@ const NewTodoOverlay: FC<NewTodoOverlayProps> = ({
           errors={error?.steps?.map((err) => err.err)}
         />
         <ButtonsRow>
-          <Button type="secondary" onClick={done}>
+          <Button type="secondary" onClick={close}>
             Cancel
           </Button>
           <Button
@@ -99,7 +99,7 @@ const NewTodoOverlay: FC<NewTodoOverlayProps> = ({
             onClick={() => {
               const err = validateTodo(todo);
               if (err.isValid) {
-                submit(todo);
+                submit({ ...todo, date: new Date().toISOString() });
                 close();
               } else {
                 setError(err.err);
