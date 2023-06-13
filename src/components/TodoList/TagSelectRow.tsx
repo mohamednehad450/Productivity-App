@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import { useTodo } from ".";
-import { Tag } from "../../API";
+import { Tag } from "./hooks";
 
 import { ReactComponent as Circle } from "../../icons/circle.svg";
 import { ReactComponent as DeleteIcon } from "../../icons/delete.svg";
@@ -20,7 +20,7 @@ const TagSelectRow: FC<TagSelectRowProps> = ({ tag, isSelected, onClick }) => {
       {editTag && (
         <NewTagOverlay
           submit={(t) => updateTag(tag.id, t)}
-          done={() => setEditTag(false)}
+          close={() => setEditTag(false)}
           initialTag={tag}
         />
       )}

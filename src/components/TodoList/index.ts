@@ -6,7 +6,7 @@ import { useTodo, useProvideTodo, todoContext } from "./hooks";
 
 import { filterTodos, formatTodo } from "./utils";
 
-import type { TodoContext } from "./hooks";
+import type { TodoContext, Todo, Tag, Step } from "./hooks";
 
 export {
   TodoRow,
@@ -20,4 +20,4 @@ export {
   DateBadge,
 };
 
-export type { TodoContext };
+export type { TodoContext, Todo, Tag, Step };

@@ -1,11 +1,12 @@
 import React, { FC } from "react";
 import { IconButton } from "../common";
-import { createEmptyStep, StepError } from "../../API";
+import { StepError } from "./utils";
 import StepInput from "./StepInput";
 
 import { ReactComponent as Add } from "../../icons/add-fill.svg";
 
-import type { Step } from "../../API";
+import type { Step } from "./hooks";
+import { v4 } from "uuid";
 
 interface StepsInputProps {
   onChange: (steps: Step[]) => void;
@@ -20,7 +21,7 @@ const StepsInput: FC<StepsInputProps> = ({ onChange, steps, errors }) => {
         className="icon-prime"
         icon={<Add />}
         label="Add Step"
-        onClick={() => onChange([createEmptyStep(), ...steps])}
+        onClick={() => onChange([{ id: v4(), title: "" }, ...steps])}
       />
       <div className="indent scroll">
         {steps.map((step, index) => (

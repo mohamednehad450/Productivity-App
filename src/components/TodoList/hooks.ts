@@ -1,45 +1,47 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import {
-  getTodos as getTodosApi,
-  updateTodo as updateTodoApi,
-  deleteTodo as deleteTodoApi,
-  addNewTodo as addNewTodoApi,
-  checkTodo as checkTodoApi,
-  checkStep as checkStepApi,
-  getTages as getTagsApi,
-  addNewTag as addNewTagApi,
-  updateTag as updateTagApi,
-  deleteTag as deleteTagApi,
-} from "../../API";
-import {
-  removeFromArray,
-  replaceFromArray,
-  updateItemInArray,
-} from "../../utils";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { removeFromArray, updateItemInArray } from "../../utils";
 
-import type { Step, Todo, Tag, AuthContext } from "../../API";
+export interface Tag {
+  color: string;
+  label: string;
+  id: string;
+}
+
+export interface Step {
+  id: string;
+  title: string;
+  dueDate?: string;
+  checked?: string;
+}
+
+export interface Todo {
+  title: string;
+  checked?: string;
+  tagId?: Tag["id"];
+  dueDate?: string;
+  date: string;
+  id: string;
+  steps: Step[];
+}
 
 interface TodoContext {
   todos: Todo[];
-  getTodos: () => void;
-  updateTodo: (id: Todo["id"], t: Partial<Todo>) => Promise<void>;
-  deleteTodo: (id: Todo["id"]) => Promise<void>;
-  checkTodo: (id: Todo["id"], todo: Todo) => Promise<void>;
-  addNewTodo: (t: Partial<Todo>) => Promise<void>;
-  checkStep: (todo: Todo, stepId: Step["id"]) => Promise<void>;
+  updateTodo: (id: Todo["id"], t: Todo) => void;
+  deleteTodo: (id: Todo["id"]) => void;
+  checkTodo: (id: Todo["id"]) => void;
+  checkStep: (todoId: Todo["id"], stepId: Step["id"]) => void;
+  addNewTodo: (t: Todo) => void;
   tags: Tag[];
-  getTags: () => void;
   getTag: (id?: Tag["id"]) => Tag | undefined;
-  addNewTag: (tag: Partial<Tag>) => Promise<void>;
-  deleteTag: (id: Tag["id"]) => Promise<void>;
-  updateTag: (id: Tag["id"], tag: Partial<Tag>) => Promise<void>;
+  addNewTag: (tag: Tag) => void;
+  deleteTag: (id: Tag["id"]) => void;
+  updateTag: (id: Tag["id"], tag: Tag) => void;
+}
+
+function getCheckedDate(steps: Step[]): Date {
+  const date = new Date();
+  date.setTime(Math.max(...steps.map((s) => new Date(s.checked!).getTime())));
+  return date;
 }
 
 function todoNotinitialized(): any {
@@ -48,14 +50,12 @@ function todoNotinitialized(): any {
 
 const defaultTodoContext: TodoContext = {
   todos: [],
-  getTodos: todoNotinitialized,
   updateTodo: todoNotinitialized,
   deleteTodo: todoNotinitialized,
   addNewTodo: todoNotinitialized,
   checkTodo: todoNotinitialized,
   checkStep: todoNotinitialized,
   tags: [],
-  getTags: todoNotinitialized,
   getTag: todoNotinitialized,
   addNewTag: todoNotinitialized,
   deleteTag: todoNotinitialized,
@@ -66,118 +66,77 @@ const todoContext = createContext(defaultTodoContext);
 
 const useTodo = () => useContext(todoContext);
 
-const useProvideTodo = ({ user, signout }: AuthContext): TodoContext => {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
-
-  const isAuthError = (err: any): boolean => {
-    const { response, isAxiosError } = err;
-    if (isAxiosError) {
-      const { status } = response;
-      if (status === 401 || status === 403) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  const handleTodoErr = (err: any): any => {
-    const { response, isAxiosError } = err;
-
-    if (isAuthError(err)) {
-      signout();
-    }
-
-    if (isAxiosError) {
-      const { status, data } = response;
-
-      if (status === 404) {
-        // eslint-disable-next-line no-throw-literal
-        throw { notFound: true, ...data };
-      } else if (status === 400) {
-        throw data;
-      } else if (status === 500) {
-        alert(
-          "Somthing went wrong, Please try again later or refresh the page."
-        );
-      }
-    }
-  };
-
-  const getTodos = useCallback(
-    () =>
-      getTodosApi(user)
-        .then((r) => r && setTodos(r))
-        .catch((err: any) => {
-          isAuthError(err) && signout();
-        }),
-    [user, signout]
+const useProvideTodo = (): TodoContext => {
+  const [todos, setTodos] = useState<Todo[]>(
+    JSON.parse(window.localStorage.getItem("todos") || "[]")
   );
+  const [tags, setTags] = useState<Tag[]>(
+    JSON.parse(window.localStorage.getItem("tags") || "[]")
+  );
+
+  useEffect(() => {
+    window.localStorage.setItem("todos", JSON.stringify(todos));
+  }, [todos]);
+  useEffect(() => {
+    window.localStorage.setItem("tags", JSON.stringify(tags));
+  }, [tags]);
 
   const updateTodo = (id: Todo["id"], t: Partial<Todo>) =>
-    updateTodoApi(id, t, user)
-      .then((t) => setTodos((arr) => replaceFromArray(arr, t)))
-      .catch((err) => (err.isAxiosError ? handleTodoErr(err) : getTodos()));
+    setTodos((todos) =>
+      updateItemInArray(todos, id, (old) => ({ ...old, ...t }))
+    );
 
   const deleteTodo = (id: Todo["id"]) =>
-    deleteTodoApi(id, user)
-      .then(() => setTodos((arr) => removeFromArray(arr, id)))
-      .catch(getTodos);
+    setTodos((todos) => removeFromArray(todos, id));
 
-  const addNewTodo = (t: Partial<Todo>) =>
-    addNewTodoApi(t, user)
-      .then((t) => setTodos((arr) => [t, ...arr]))
-      .catch(handleTodoErr);
+  const addNewTodo = (t: Todo) => setTodos((todos) => [t, ...todos]);
 
-  const checkStep = (todo: Todo, stepId: Step["id"]) =>
-    checkStepApi(todo.id, stepId, user)
-      .then(({ checked }) =>
-        setTodos((todos) =>
-          replaceFromArray(todos, {
-            ...todo,
-            steps: updateItemInArray(todo.steps, stepId, (s) => ({
-              ...s,
-              checked,
-            })),
-          })
-        )
-      )
-      .catch((err) => (err.isAxiosError ? handleTodoErr(err) : getTodos()));
-
-  const checkTodo = (id: Todo["id"], todo: Todo) =>
-    checkTodoApi(id, user)
-      .then(({ checked }) =>
-        setTodos((arr) => replaceFromArray(arr, { ...todo, checked }))
-      )
-      .catch((err) => (err.isAxiosError ? handleTodoErr(err) : getTodos()));
-
-  const getTags = useCallback(
-    () =>
-      getTagsApi(user)
-        .then((r) => r && setTags(r))
-        .catch((err) => {
-          isAuthError(err) && signout();
-        }),
-    [user, signout]
-  );
-
-  const addNewTag = (tag: Partial<Tag>) =>
-    addNewTagApi(tag, user)
-      .then((t) => {
-        setTags((arr) => [t, ...arr]);
-        return t;
+  const checkStep = (todoId: Todo["id"], stepId: Step["id"]) =>
+    setTodos((todos) =>
+      updateItemInArray(todos, todoId, (todo) => {
+        const newSteps = updateItemInArray(todo.steps, stepId, (step) => ({
+          ...step,
+          checked: step.checked ? undefined : new Date().toISOString(),
+        }));
+        return {
+          ...todo,
+          steps: newSteps,
+          checked: newSteps.some((s) => !s.checked)
+            ? undefined
+            : getCheckedDate(newSteps).toISOString(),
+        };
       })
-      .catch(handleTodoErr);
+    );
+
+  const checkTodo = (id: Todo["id"]) =>
+    setTodos((todos) =>
+      updateItemInArray(todos, id, (todo) => {
+        if (todo.checked) {
+          return {
+            ...todo,
+            checked: undefined,
+          };
+        } else {
+          return {
+            ...todo,
+            checked: new Date().toISOString(),
+            steps: todo.steps.map((s) => ({
+              ...s,
+              checked: s.checked ? s.checked : new Date().toISOString(),
+            })),
+          };
+        }
+      })
+    );
+
+  const addNewTag = (tag: Tag) => setTags((tags) => [tag, ...tags]);
 
   const updateTag = (id: Tag["id"], tag: Partial<Tag>) =>
-    updateTagApi(id, tag, user)
-      .then((t) => setTags(replaceFromArray(tags, t)))
-      .catch(handleTodoErr);
+    setTags((tags) =>
+      updateItemInArray(tags, id, (old) => ({ ...old, ...tag }))
+    );
 
-  const deleteTag = (id: Tag["id"]) =>
-    deleteTagApi(id, user)
-      .then(() => setTags(removeFromArray(tags, id)))
-      .catch(handleTodoErr);
+  const deleteTag = (id: Tag["id"]) => setTags(removeFromArray(tags, id));
 
   const tagsMap: any = useMemo(() => {
     const map = new Map();
@@ -186,21 +145,14 @@ const useProvideTodo = ({ user, signout }: AuthContext): TodoContext => {
   }, [tags]);
   const getTag = (id?: Tag["id"]): Tag | undefined => tagsMap.get(id);
 
-  useEffect(() => {
-    getTodos();
-    getTags();
-  }, [getTodos, getTags]);
-
   return {
     todos,
-    getTodos,
     updateTodo,
     deleteTodo,
     addNewTodo,
     checkTodo,
     checkStep,
     tags,
-    getTags,
     getTag,
     addNewTag,
     updateTag,

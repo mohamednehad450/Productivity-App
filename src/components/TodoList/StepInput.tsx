@@ -1,9 +1,10 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { IconButton, TextInput, DatePicker } from "../common";
 
 import { ReactComponent as CancelIcon } from "../../icons/cancel-fill.svg";
 
-import type { Step, StepError } from "../../API";
+import type { Step } from "./hooks";
+import type { StepError } from "./utils";
 
 interface StepInputProps {
   step: Step;
@@ -29,7 +30,9 @@ const StepInput: FC<StepInputProps> = ({ step, error, onChange, remove }) => {
         />
         <DatePicker
           date={step.dueDate ? new Date(step.dueDate) : undefined}
-          onChange={(dueDate) => onChange({ ...step, dueDate })}
+          onChange={(dueDate) =>
+            onChange({ ...step, dueDate: dueDate.toISOString() })
+          }
           emptyPlaceholder="set a deadline (optional)"
         />
       </div>

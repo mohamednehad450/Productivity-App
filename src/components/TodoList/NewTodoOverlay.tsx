@@ -1,5 +1,5 @@
-import React, { useState, FC } from "react";
-import { createEmptyTodo, validateTodo } from "../../API";
+import { useState, FC } from "react";
+import { validateTodo } from "./utils";
 import {
   Overlay,
   Button,
@@ -13,11 +13,13 @@ import TagSelect from "./TagSelect";
 
 import { ReactComponent as CancelIcon } from "../../icons/cancel-fill.svg";
 
-import type { Todo, Step, TodoError } from "../../API";
+import type { Todo, Step } from "./hooks";
+import type { TodoError } from "./utils";
+import { v4 } from "uuid";
 
 interface NewTodoOverlayProps {
   done: () => void;
-  submit: (todo: Partial<Todo>) => Promise<void>;
+  submit: (todo: Todo) => void;
   initialTodo?: Todo;
 }
 
@@ -33,8 +35,8 @@ const NewTodoOverlay: FC<NewTodoOverlayProps> = ({
   submit,
   initialTodo,
 }) => {
-  const [todo, setTodo] = useState<Partial<Todo>>(
-    initialTodo || createEmptyTodo()
+  const [todo, setTodo] = useState<Todo>(
+    initialTodo || { date: "", id: v4(), steps: [], title: "" }
   );
   const [error, setError] = useState<TodoError>();
 
@@ -46,8 +48,8 @@ const NewTodoOverlay: FC<NewTodoOverlayProps> = ({
       <div className="overlay-container-lg">
         <div className="input-row header-margin">
           <TagSelect
-            selected={todo.tag}
-            onChange={(t) => setTodo({ ...todo, tag: t?.id })}
+            selected={todo.tagId}
+            onChange={(t) => setTodo({ ...todo, tagId: t?.id })}
           />
           <TextInput
             onChange={(title) => {
@@ -57,7 +59,7 @@ const NewTodoOverlay: FC<NewTodoOverlayProps> = ({
             value={todo.title}
             placeholder="New Todo"
             className="input-lg"
-            errors={(error?.non_field_errors || []).concat(error?.title || [])}
+            errors={error?.title || []}
           />
         </div>
         <div className="input-row">
@@ -67,7 +69,9 @@ const NewTodoOverlay: FC<NewTodoOverlayProps> = ({
             date={
               maxDate || (todo.dueDate ? new Date(todo.dueDate) : undefined)
             }
-            onChange={(dueDate) => setTodo({ ...todo, dueDate })}
+            onChange={(dueDate) =>
+              setTodo({ ...todo, dueDate: dueDate.toISOString() })
+            }
           />
           {todo.dueDate && !maxDate && (
             <IconButton
@@ -95,9 +99,8 @@ const NewTodoOverlay: FC<NewTodoOverlayProps> = ({
             onClick={() => {
               const err = validateTodo(todo);
               if (err.isValid) {
-                submit(todo)
-                  .then(done)
-                  .catch((err) => setError(err));
+                submit(todo);
+                close();
               } else {
                 setError(err.err);
               }

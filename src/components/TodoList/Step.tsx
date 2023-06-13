@@ -2,16 +2,16 @@ import React, { FC } from "react";
 import { Checkbox } from "../common";
 
 // Types
-import type { Step } from "../../API";
+import type { Step } from "./hooks";
 import DateBadge from "./DateBadge";
 
 interface StepRowProps {
   step: Step;
-  onChange: (step: Partial<Step>) => void;
+  onChange: () => void;
 }
 
 const StepRow: FC<StepRowProps> = ({ step, onChange }) => {
-  const { title, checked, id, dueDate } = step;
+  const { title, checked, dueDate } = step;
   return (
     <div className="step-container">
       <div className="step-row">
@@ -22,10 +22,7 @@ const StepRow: FC<StepRowProps> = ({ step, onChange }) => {
         </div>
         <span className="row">
           <DateBadge date={dueDate} crossed={!!checked} />
-          <Checkbox
-            checked={!!checked}
-            onChange={(b) => onChange({ id, checked: b ? new Date() : null })}
-          />
+          <Checkbox checked={!!checked} onChange={onChange} />
         </span>
       </div>
     </div>

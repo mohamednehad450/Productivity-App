@@ -9,7 +9,7 @@ import { ReactComponent as ExpandIcon } from "../../icons/expand.svg";
 import { ReactComponent as TimerIcon } from "../../icons/pomodoro.svg";
 
 // Types
-import { Todo } from "../../API";
+import { Todo } from "./hooks";
 import { FormatedTodo } from "./utils";
 
 interface TodoRowProps {
@@ -20,8 +20,16 @@ interface TodoRowProps {
 
 const TodoRow = (props: TodoRowProps) => {
   const { todo, onClick, expanded: exp } = props;
-  const { title, tag, steps, id, dueDate, stepsLeft, expandable, checked } =
-    todo;
+  const {
+    title,
+    tagId: tag,
+    steps,
+    id,
+    dueDate,
+    stepsLeft,
+    expandable,
+    checked,
+  } = todo;
 
   const [editing, setEditing] = useState(false);
 
@@ -69,10 +77,7 @@ const TodoRow = (props: TodoRowProps) => {
                 <ExpandIcon />
               </span>
             ) : (
-              <Checkbox
-                checked={!!checked}
-                onChange={() => checkTodo(id, todo)}
-              />
+              <Checkbox checked={!!checked} onChange={() => checkTodo(id)} />
             )}
             <ActionSelect
               actions={[
@@ -88,7 +93,7 @@ const TodoRow = (props: TodoRowProps) => {
                 <StepRow
                   key={step.id}
                   step={step}
-                  onChange={(s) => checkStep(todo, s.id || "")}
+                  onChange={() => checkStep(todo.id, step.id || "")}
                 />
               ))
             : null

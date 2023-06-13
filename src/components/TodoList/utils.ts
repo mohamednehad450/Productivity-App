@@ -1,7 +1,74 @@
 import { compDate } from "../../utils";
 
-import type { Step, Todo } from "../../API";
+import type { Step, Todo } from "./hooks";
 import type { TodoSettings } from "../Settings";
+
+export interface StepError {
+  title?: string[];
+}
+export interface TodoError {
+  title?: string[];
+  steps?: ErrorObj<StepError>[];
+}
+
+export interface ErrorObj<T> {
+  isValid: boolean;
+  err: T;
+}
+
+export const validateTodo = (todo: Partial<Todo>): ErrorObj<TodoError> => {
+  // FrontEnd validation
+  const err: TodoError = {};
+  let isValid = true;
+
+  // title
+  if (todo.title || todo.title === "") {
+    const titleErr: string[] = [];
+    todo.title.length === 0 && titleErr.push("This field can't be blank");
+    todo.title.length > 150 &&
+      titleErr.push("This feild can't be greater than 150 charecters");
+    if (titleErr.length) {
+      err.title = titleErr;
+      isValid = false;
+    }
+  }
+
+  // steps
+  if (todo.steps) {
+    const stepsErr = todo.steps.map((s) => validateStep(s));
+    if (!stepsErr.reduce((acc, s) => acc && s.isValid, true)) {
+      err.steps = stepsErr;
+      isValid = false;
+    }
+  }
+
+  return {
+    isValid,
+    err,
+  };
+};
+
+export const validateStep = (step: Step): ErrorObj<StepError> => {
+  const err: StepError = {};
+  let isValid = true;
+
+  // title
+  if (step.title || step.title === "") {
+    const titleErr: string[] = [];
+    step.title.length === 0 && titleErr.push("This field can't be blank");
+    step.title.length > 150 &&
+      titleErr.push("This feild can't be greater than 150 charecters");
+    if (titleErr.length) {
+      err.title = titleErr;
+      isValid = false;
+    }
+  }
+
+  return {
+    isValid,
+    err,
+  };
+};
 
 const todoCompFns: { [key: string]: (t1: Todo, t2: Todo) => number } = {
   added: (t1: Todo, t2: Todo) => compDate(t1.date, t2.date),
@@ -108,21 +175,11 @@ export const formatTodo = (todo: Todo): FormatedTodo => {
       )
     : todoDueDate;
 
-  // Get the maximum check date IF all is checked
-  const checked = steps.length
-    ? steps.reduce<Todo["checked"]>(
-        (acc, { checked }) =>
-          acc ? (checked ? (acc > checked ? acc : checked) : null) : null,
-        steps[0].checked
-      )
-    : todoCheckedDate;
-
   return {
     ...todo,
     stepsLeft,
     expandable: !!steps.length,
     dueDate: dueDate || todoDueDate,
-    checked,
   };
 };
 

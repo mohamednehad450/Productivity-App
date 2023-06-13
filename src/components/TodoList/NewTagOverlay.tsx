@@ -1,6 +1,5 @@
-import React, { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { SliderPicker } from "react-color";
-import { createEmptyTag } from "../../API";
 
 import {
   Overlay,
@@ -11,21 +10,30 @@ import {
   ErrorList,
 } from "../common";
 
-import type { Tag, TagError } from "../../API";
+import type { Tag } from "./hooks";
+import { v4 } from "uuid";
 
 interface NewTagOverlayProps {
-  done: () => void;
-  submit: (tag: Partial<Tag>) => Promise<void>;
-  initialTag?: Partial<Tag>;
+  close: () => void;
+  submit: (tag: Tag) => void;
+  initialTag?: Tag;
 }
 
 const NewTagOverlay: FC<NewTagOverlayProps> = ({
   submit,
   initialTag,
-  done,
+  close,
 }) => {
-  const [tag, setTag] = useState<Partial<Tag>>(initialTag || createEmptyTag());
-  const [err, setErr] = useState<TagError>({});
+  const [tag, setTag] = useState<Tag>(
+    initialTag || { id: v4(), color: "#ffffff", label: "" }
+  );
+  const [err, setErr] = useState<string>();
+
+  useEffect(() => {
+    if (tag.label && err) {
+      setErr(undefined);
+    }
+  }, [tag.label]);
 
   return (
     <Overlay>
@@ -36,7 +44,7 @@ const NewTagOverlay: FC<NewTagOverlayProps> = ({
             placeholder="Tag Name"
             onChange={(label) => setTag({ ...tag, label })}
             value={tag.label}
-            errors={[...(err.label || []), ...(err.non_field_errors || [])]}
+            errors={err ? [err] : []}
           />
         </div>
         <div className="grow"></div>
@@ -45,19 +53,24 @@ const NewTagOverlay: FC<NewTagOverlayProps> = ({
           color={tag.color}
           onChange={(color) => setTag({ ...tag, color: color.hex })}
         />
-        <ErrorList errors={err.color} />
         <div className="grow"></div>
         <ButtonsRow>
-          <Button type="secondary" onClick={done}>
+          <Button type="secondary" onClick={close}>
             Cancel
           </Button>
           <Button
             type="primary"
-            onClick={() =>
-              submit(tag)
-                .then(done)
-                .catch((err) => setErr(err))
-            }
+            onClick={() => {
+              if (!tag.label) {
+                setErr("Must provide title");
+                return;
+              }
+              if (tag.label.length > 150) {
+                setErr("Tag label cannot be more then 150 character");
+                return;
+              }
+              submit(tag);
+            }}
           >
             {initialTag ? "Save" : "Add"}
           </Button>

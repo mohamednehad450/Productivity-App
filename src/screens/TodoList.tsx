@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { ReactComponent as AddIcon } from "../icons/add-outline.svg";
 import {
   TodoRow,
@@ -10,7 +10,7 @@ import {
 import { Header, IconButton } from "../components/common";
 import { useSettings } from "../components/Settings";
 
-import type { Todo } from "../API";
+import type { Todo } from "../components/TodoList";
 
 const TodoList: FC = () => {
   useEffect(() => {
@@ -61,7 +61,7 @@ const TodoList: FC = () => {
             key={todo.id}
             todo={todo}
             expanded={todo.id === expanded}
-            onClick={(id) => setExpanded(expanded === todo.id ? -1 : id)}
+            onClick={(id) => setExpanded(expanded === todo.id ? "" : id)}
           />
         ))}
       </div>

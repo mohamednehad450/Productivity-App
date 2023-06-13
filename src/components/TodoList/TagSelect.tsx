@@ -7,7 +7,7 @@ import TagSelectRow from "./TagSelectRow";
 import { ReactComponent as Circle } from "../../icons/circle.svg";
 import { ReactComponent as Add } from "../../icons/add-fill.svg";
 
-import type { Tag } from "../../API";
+import type { Tag } from "./hooks";
 
 interface TagSelectProps {
   selected?: Tag["id"];
@@ -24,7 +24,7 @@ const TagSelect: FC<TagSelectProps> = ({ selected, onChange }) => {
       {addTagOverlay && (
         <NewTagOverlay
           submit={addNewTag}
-          done={() => setAddTagOverlay(false)}
+          close={() => setAddTagOverlay(false)}
         />
       )}
       <Select
