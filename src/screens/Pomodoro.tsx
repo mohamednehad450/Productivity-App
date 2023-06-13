@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from ".";
 import {
   Button,
@@ -15,7 +15,7 @@ import {
 import { useTodo } from "../components/TodoList";
 
 import type { Option } from "../components/common";
-import type { Todo } from "../API";
+import type { Todo } from "../components/TodoList";
 
 interface Selected extends Todo, Option {}
 

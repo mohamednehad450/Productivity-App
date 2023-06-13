@@ -5,18 +5,13 @@ import {
   useEffect,
   useState,
 } from "react";
-import {
-  getInterval as getIntervalAPI,
-  getIntervals as getIntervalsAPI,
-  addInterval as addIntervalAPI,
-} from "../../API";
 
-import type { PomodoroInterval, AuthContext } from "../../API";
+import type { PomodoroInterval } from "./hooks";
 
 export interface IntervalContext {
   intervals: PomodoroInterval[];
-  addInterval: (p: Partial<PomodoroInterval>) => Promise<void>;
-  getInterval: (id: PomodoroInterval["id"]) => Promise<PomodoroInterval>;
+  addInterval: (p: PomodoroInterval) => void;
+  getInterval: (id: PomodoroInterval["id"]) => PomodoroInterval | undefined;
 }
 
 const defaultIntervalContext: any = {
@@ -31,26 +26,20 @@ export const intervalContext = createContext<IntervalContext>(
 
 export const useIntervals = () => useContext(intervalContext);
 
-export const useProvideIntervals = ({ user }: AuthContext): IntervalContext => {
-  const [intervals, setIntervals] = useState<PomodoroInterval[]>([]);
+export const useProvideIntervals = (): IntervalContext => {
+  const [intervals, setIntervals] = useState<PomodoroInterval[]>(
+    JSON.parse(window.localStorage.getItem("intervals") || "[]")
+  );
+
   useEffect(() => {
-    getIntervalsAPI(user).then(setIntervals);
-  }, [user]);
+    window.localStorage.setItem("intervals", JSON.stringify(intervals));
+  }, [intervals]);
 
-  const addInterval: IntervalContext["addInterval"] = useCallback(
-    (p) =>
-      addIntervalAPI(p, user).then((p) => setIntervals((arr) => [p, ...arr])),
-    [user]
-  );
+  const addInterval: IntervalContext["addInterval"] = (p) =>
+    setIntervals((ps) => [p, ...ps]);
 
-  const getInterval: IntervalContext["getInterval"] = useCallback(
-    async (id) => {
-      const p = intervals.find((p) => p.id === id);
-      if (p) return p;
-      else return await getIntervalAPI(id, user);
-    },
-    [user, intervals]
-  );
+  const getInterval: IntervalContext["getInterval"] = (id) =>
+    intervals.find((p) => p.id === id);
 
   return {
     intervals,

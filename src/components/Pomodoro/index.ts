@@ -9,7 +9,12 @@ import {
   useProvideIntervals,
 } from "./intervalContext";
 
-import type { PomodoroMode, PomodoroState, PomodoroContext } from "./hooks";
+import type {
+  PomodoroMode,
+  PomodoroState,
+  PomodoroContext,
+  PomodoroInterval,
+} from "./hooks";
 
 export {
   CircularProgress,
@@ -24,4 +29,4 @@ export {
   useProvideIntervals,
 };
 
-export type { PomodoroMode, PomodoroState, PomodoroContext };
+export type { PomodoroMode, PomodoroState, PomodoroContext, PomodoroInterval };

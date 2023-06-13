@@ -10,8 +10,16 @@ import { useIntervals } from "./intervalContext";
 import { breakSound, workSound } from "../../audio";
 import { pushNotifications } from "../../utils";
 
-import type { AuthContext, PomodoroInterval, Todo } from "../../API";
 import type { PomodoroSettings } from "../Settings";
+import type { Todo } from "../TodoList";
+import { v4 } from "uuid";
+export interface PomodoroInterval {
+  id: string;
+  todoId?: Todo["id"];
+  startDate: string;
+  endDate: string;
+  defaultDuration: number;
+}
 
 enum PomodoroMode {
   WORK = "work",
@@ -97,10 +105,7 @@ const usePomodoro = () => useContext(pomodoroContext);
 
 const TICK = 1000;
 
-const useProvidePomodoro = (
-  { user }: AuthContext,
-  settings: PomodoroSettings
-): PomodoroContext => {
+const useProvidePomodoro = (settings: PomodoroSettings): PomodoroContext => {
   const [pomodoro, dispatch] = useReducer(pomodoroReducer, {
     state: newState(PomodoroMode.WORK, settings),
     stats: defaultPomodoroStats,
@@ -128,10 +133,12 @@ const useProvidePomodoro = (
     if (pomodoro.state.mode !== PomodoroMode.WORK) {
       if (pomInterval?.startDate) {
         addInterval({
-          ...pomInterval,
-          endDate: new Date(),
+          defaultDuration: settings.work,
+          endDate: new Date().toISOString(),
+          id: v4(),
+          startDate: pomInterval.startDate,
         }); // TODO: Handles api error
-        setPomInterval((p) => ({ todo: p?.todo }));
+        setPomInterval((p) => ({ todoId: p?.todoId }));
       }
     }
 
@@ -141,10 +148,10 @@ const useProvidePomodoro = (
         !!timer
           ? {
               ...p,
-              startDate: new Date(),
+              startDate: new Date().toISOString(),
               defaultDuration: settings.work,
             }
-          : { todo: p?.todo }
+          : { todoId: p?.todoId }
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -200,7 +207,7 @@ const useProvidePomodoro = (
     if (!pomInterval?.startDate && PomodoroMode.WORK) {
       setPomInterval((p) => ({
         ...p,
-        startDate: new Date(),
+        startDate: new Date().toISOString(),
         defaultDuration: settings.work,
       }));
     }
@@ -232,12 +239,12 @@ const useProvidePomodoro = (
       },
     });
     if (!settings.submitOnSkip) {
-      setPomInterval((p) => ({ todo: p?.todo }));
+      setPomInterval((p) => ({ todoId: p?.todoId }));
     }
   };
 
   const setTodo = (id?: Todo["id"]) => {
-    setPomInterval((p) => ({ ...p, todo: id }));
+    setPomInterval((p) => ({ ...p, todoId: id }));
   };
 
   return {

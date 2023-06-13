@@ -1,4 +1,4 @@
-import React, { ReactNode, FC } from "react";
+import { ReactNode, FC } from "react";
 import { Spring } from "react-spring/renderprops";
 interface CircularProgressProps {
   progress: number;

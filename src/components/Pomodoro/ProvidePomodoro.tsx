@@ -1,16 +1,14 @@
 import React, { FC } from "react";
-import { useAuth } from "../../API";
 import { useSettings } from "../Settings";
 
 import { useProvidePomodoro, pomodoroContext } from "./index";
 import { intervalContext, useProvideIntervals } from "./intervalContext";
 
 const PomodoroClock: FC = ({ children }) => {
-  const auth = useAuth();
   const {
     settings: { pomodoroSettings },
   } = useSettings();
-  const pomodoro = useProvidePomodoro(auth, pomodoroSettings);
+  const pomodoro = useProvidePomodoro(pomodoroSettings);
 
   return (
     <pomodoroContext.Provider value={pomodoro}>
@@ -20,8 +18,7 @@ const PomodoroClock: FC = ({ children }) => {
 };
 
 const PomodoroIntervals: FC = ({ children }) => {
-  const auth = useAuth();
-  const intervals = useProvideIntervals(auth);
+  const intervals = useProvideIntervals();
 
   return (
     <intervalContext.Provider value={intervals}>
