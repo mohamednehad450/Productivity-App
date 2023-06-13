@@ -25,7 +25,10 @@ const TodoStats: FC<TodoStatsProps> = () => {
           </Button>
           <span className="text-title">{monthDateFormat(todoStats.month)}</span>
           <Button
-            disabled={isSameMonth(todoStats.month, new Date())}
+            disabled={isSameMonth(
+              todoStats.month.toISOString(),
+              new Date().toISOString()
+            )}
             onClick={() => {
               const d = new Date(todoStats.month);
               d.setMonth(todoStats.month.getMonth() + 1);

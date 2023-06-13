@@ -96,17 +96,14 @@ export function compDate(d1: Date | string, d2: Date | string) {
   return t1 > t2 ? 1 : t1 === t2 ? 0 : -1;
 }
 
-export const isToday = (d: Date | string | null) => {
+export const isToday = (d?: string) => {
   if (!d) return false;
   const now = new Date();
   const date = new Date(d);
   return now.toLocaleDateString() === date.toLocaleDateString();
 };
 
-export const isSameMonth = (
-  d1: Date | string | null,
-  d2: Date | string | null
-) => {
+export const isSameMonth = (d1?: string, d2?: string) => {
   if (!d1 || !d2) return false;
   const date1 = new Date(d1);
   const date2 = new Date(d2);

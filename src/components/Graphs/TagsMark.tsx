@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { TagMark } from ".";
 
-import type { Tag } from "../../API";
+import type { Tag } from "../TodoList";
 
 interface TagsMarkProps {
   tags: Tag[];

@@ -1,18 +1,12 @@
 import { createContext, useContext, useMemo, useState } from "react";
 import { isSameMonth, isToday } from "../../utils";
-import { formatTodo, useTodo } from "../TodoList";
+import { formatTodo, useTodo, Tag, Todo, Step } from "../TodoList";
 import { useIntervals } from "../Pomodoro";
-import { useHabits } from "../HabitTracker";
+import { useHabits, Habit } from "../HabitTracker";
 
-import type {
-  Habit,
-  IntervalWithTodo,
-  Step,
-  Tag,
-  Todo,
-  TodoWithTag,
-} from "../../API";
-
+import { PomodoroInterval } from "../Pomodoro/hooks";
+type TodoWithTag = Todo & { tag?: Tag };
+export type IntervalWithTodo = PomodoroInterval & { todo?: TodoWithTag };
 export interface StatsContext {
   summary: {
     todoAdded: number;
@@ -122,13 +116,13 @@ export const useProvideStats = (): StatsContext => {
     tags.add({ label: "None", color: "#FFF", id: "NONE" });
 
     for (let t of todos) {
-      const tag = getTag(t.tag);
-      isSameMonth(t.date, todosMonth) &&
+      const tag = getTag(t.tagId);
+      isSameMonth(t.date, todosMonth.toISOString()) &&
         added.push({ ...t, tag }) &&
         tag &&
         tags.add(tag);
 
-      isSameMonth(formatTodo(t).checked, todosMonth) &&
+      isSameMonth(formatTodo(t).checked, todosMonth.toISOString()) &&
         finished.push({ ...t, tag }) &&
         tag &&
         tags.add(tag);
@@ -157,10 +151,10 @@ export const useProvideStats = (): StatsContext => {
 
   const pomodoroStats = useMemo(() => {
     const monthInterval = intervals.filter((i) =>
-      isSameMonth(i.endDate, intervalsMonth)
+      isSameMonth(i.endDate, intervalsMonth.toISOString())
     );
 
-    const todosIds = new Set(monthInterval.map((i) => i.todo || ""));
+    const todosIds = new Set(monthInterval.map((i) => i.todoId || ""));
 
     const todosMap = new Map<Todo["id"], TodoWithTag>();
 
@@ -168,13 +162,13 @@ export const useProvideStats = (): StatsContext => {
 
     for (let id of todosIds) {
       const todo = todos.find((t) => t.id === id);
-      const tag = todo && getTag(todo.tag);
+      const tag = todo && getTag(todo.tagId);
       tag && tags.set(tag.id, tag);
-      todo && todosMap.set(id, { ...todo, tag: getTag(todo.tag) });
+      todo && todosMap.set(id, { ...todo, tag: getTag(todo.tagId) });
     }
     const intervalsWithTodos: IntervalWithTodo[] = monthInterval.map((i) => ({
       ...i,
-      todo: todosMap.get(i.todo || ""),
+      todo: todosMap.get(i.todoId || ""),
     }));
 
     return {
@@ -188,7 +182,9 @@ export const useProvideStats = (): StatsContext => {
     const filterHabits = habits
       .map((h) => ({
         ...h,
-        entries: h.entries.filter((d) => isSameMonth(habitsMonth, d)),
+        entries: h.entries.filter((d) =>
+          isSameMonth(habitsMonth.toISOString(), d)
+        ),
       }))
       .filter((h) => h.entries.length);
 

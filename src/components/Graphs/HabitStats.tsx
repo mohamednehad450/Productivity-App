@@ -25,7 +25,10 @@ const HabitStats: FC = () => {
             {monthDateFormat(habitsStats.month)}
           </span>
           <Button
-            disabled={isSameMonth(habitsStats.month, new Date())}
+            disabled={isSameMonth(
+              habitsStats.month.toISOString(),
+              new Date().toISOString()
+            )}
             onClick={() => {
               const d = new Date(habitsStats.month);
               d.setMonth(habitsStats.month.getMonth() + 1);

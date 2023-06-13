@@ -4,7 +4,7 @@ import { formatMinToHour } from "../../utils";
 import { LinearAxisLeft, BandAxisBottom } from ".";
 
 import type { StatsContext } from ".";
-import type { IntervalWithTodo } from "../../API";
+import type { IntervalWithTodo } from "./hooks";
 import BarChartMarks from "./BarChartMarks";
 
 interface PomodoroGraphProps {

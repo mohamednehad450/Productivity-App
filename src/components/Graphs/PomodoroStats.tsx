@@ -34,7 +34,10 @@ const PomodoroStats: FC<PomodoroStatsProps> = () => {
           </Button>
           <span className="text-title">{monthDateFormat(stats.month)}</span>
           <Button
-            disabled={isSameMonth(stats.month, new Date())}
+            disabled={isSameMonth(
+              stats.month.toISOString(),
+              new Date().toISOString()
+            )}
             onClick={() => {
               const d = new Date(stats.month);
               d.setMonth(stats.month.getMonth() + 1);

@@ -1,7 +1,8 @@
 import { FC } from "react";
 
-import type { TodoWithTag } from "../../API";
+import type { Todo, Tag } from "../TodoList";
 
+type TodoWithTag = Todo & { tag?: Tag };
 interface TodosTagMarkProps {
   width: number;
   height: number;
