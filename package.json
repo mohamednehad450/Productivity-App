@@ -1,5 +1,6 @@
 {
-  "name": "frontend",
+  "name": "productivity-app",
+  "homepage": "https://mohamednehad450.github.io/productivity-app",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -35,7 +36,7 @@
   "scripts": {
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "start": "react-scripts --openssl-legacy-provider start",
-    "build": "react-scripts build",
+    "build": "react-scripts --openssl-legacy-provider build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
