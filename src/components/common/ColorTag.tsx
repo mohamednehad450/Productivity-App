@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { ReactComponent as Circle } from "../../icons/circle.svg";
 
-import type { Tag } from "../../API";
+import type { Tag } from "../TodoList";
 
 interface ColorTagProps {
   tag: Partial<Tag>;
